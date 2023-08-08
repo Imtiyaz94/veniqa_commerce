@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "management-server"
+		},
+		{
+			"path": "management-webclient"
+		}
+	],
+	"settings": {}
+}

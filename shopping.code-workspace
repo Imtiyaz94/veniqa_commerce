@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "project1",
+			"path": ".."
+		},
+		{
+			"path": "shopping-server"
+		},
+		{
+			"path": "shopping-webclient"
+		}
+	],
+	"settings": {}
+}
