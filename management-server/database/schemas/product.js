@@ -49,7 +49,7 @@ let productSchema = new mongoose.Schema({
     thumbnailUrls: {
         type: Array,
         of: String,
-        required: true,
+        required: false,
         // validate: (value) => {
         //     for (let entry of value) {
         //         if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
@@ -70,7 +70,7 @@ let productSchema = new mongoose.Schema({
     featuredImageUrls: {
         type: Array,
         of: String,
-        required: true,
+        required: false,
         // validate: (value) => {
         //     for (let entry of value) {
         //         if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
@@ -91,7 +91,7 @@ let productSchema = new mongoose.Schema({
     detailedImageUrls: {
         type: Array,
         of: String,
-        required: true,
+        required: false,
         // validate: (value) => {
         //     for (let entry of value) {
         //         if(!(validator.isURL(entry, {allow_underscores: true}) && entry.includes("s3.amazonaws.com"))) {

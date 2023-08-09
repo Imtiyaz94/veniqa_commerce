@@ -115,18 +115,19 @@ app.use(compression());
 /************************************************************* */
 // Configure Request Rate Limiter
 
-// var limiter = new RateLimit({
-//   store: new RateLimitRedis({
-//     client: redisClient,
-//     expiry: 60 * 15 // How long each rate limiting window exists for in seconds
-//   }),
-//   windowMs: 60 * 1000, // 1 minute window in milliseconds
-//   max: 200, // limit each IP to 200 requests per windowMs
-//   delayMs: 0,  // disable delaying - full speed until the max limit is reached
-//   statusCode: 429
-// })
-// 
-// app.use(limiter);
+var limiter = new RateLimit({
+  // store: new RateLimitRedis({
+  //   client: redisClient,
+  //   expiry: 60 * 15 // How long each rate limiting window exists for in seconds
+  // }),
+  windowMs: 5 * 60 * 1000, // 1 minute window in milliseconds
+  max: 200, // limit each IP to 200 requests per windowMs
+  delayMs: 0,  // disable delaying - full speed until the max limit is reached
+  statusCode: 429,
+  message: 'Too many requests, please try again later.',
+});
+
+app.use(limiter);
 
 /************************************************************* */
 // Configure authentication
