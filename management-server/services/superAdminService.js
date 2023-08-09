@@ -1,6 +1,7 @@
 import User from '../database/models/user';
 import cryptoGen from '../authentication/cryptoGen';
-import emailService from './emailServiceSendgrid';
+// import emailService from './emailServiceSendgrid';
+import emailService from './emailService';
 import httpStatus from 'http-status-codes';
 import logger from '../logging/logger';
 import jwt from 'jsonwebtoken';
@@ -31,7 +32,7 @@ export default {
             );
             // If we have gotten here, the request must be successful, so respond accordingly
             logger.info("A new user has been added", { meta: user });
-            // emailService.emailAdminWelcomeInstructions(user.email, user.name, user.passwordResetToken);
+            emailService.emailAdminWelcomeInstructions(user.email, user.name, user.passwordResetToken);
             let responseObj = { email: user.email, name: user.name, permissions: user.permissions, token };
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: responseObj };
             return result;

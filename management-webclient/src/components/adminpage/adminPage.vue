@@ -104,7 +104,7 @@
               </div>
 
                 <!-- form-row end.// -->
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label>Password</label>
                 <input
                   v-if="!this.isAddView"
@@ -114,7 +114,7 @@
                   disabled
                 >
                 <input v-else type="password" class="form-control" v-model="user.password">
-              </div>
+              </div> -->
 
               <!-- form-row.// -->
               <div class="form-group">

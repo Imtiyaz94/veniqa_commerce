@@ -91,8 +91,8 @@
 
 <script>
 // @ is an alias to /src
-import Permission from '@/constants/permissions';
 import { mapGetters } from 'vuex';
+import Permission from '@/constants/permissions';
 
 export default {
   name: 'sidebar',
@@ -162,5 +162,8 @@ export default {
 @import url('https://fonts.googleapis.com/css?family=Cairo');
 body {
   font-family: 'Cairo', sans-serif !important;
+}
+.name{
+  color: #007bff;
 }
 </style>

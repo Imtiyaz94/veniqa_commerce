@@ -20,7 +20,7 @@ import babelPolyfill from 'babel-polyfill';
 import uuidv4 from 'uuid/v4';
 import session from 'express-session';
 import redis from 'redis';
-// var RedisStore = require('connect-redis')(session);
+var RedisStore = require('connect-redis')(session);
 
 // Imports for Rate Limiting (DDos attacks prevention)
 import RateLimit from 'express-rate-limit';
@@ -117,15 +117,16 @@ app.use(session({
 // Configure Request Rate Limiter
 
 // var limiter = new RateLimit({
-//   store: new RateLimitRedis({
-//     client: redisClient,
-//     expiry: 60 * 15 // How long each rate limiting window exists for in seconds
-//   }),
-//   windowMs: 60 * 1000, // 1 minute window in milliseconds
+//   // store: new RateLimitRedis({
+//   //   client: redisClient,
+//   //   expiry: 60 * 15 // How long each rate limiting window exists for in seconds
+//   // }),
+//   windowMs: 5 * 60 * 1000, // 1 minute window in milliseconds
 //   max: 200, // limit each IP to 200 requests per windowMs
 //   delayMs: 0,  // disable delaying - full speed until the max limit is reached
-//   statusCode: 429
-// })
+//   statusCode: 429,
+//   message: 'Too many requests, please try again later.',
+// });
 // 
 // app.use(limiter);
 

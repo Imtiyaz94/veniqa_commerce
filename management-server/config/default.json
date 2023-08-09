@@ -30,7 +30,7 @@
         "exception_log_file_name": "exceptions.log"
     },
     "frontend_urls": {
-        "password_reset_base_url": "https://dev-veniqa-admin.netlify.com/#/password-reset"
+        "password_reset_base_url": "http://localhost:5202/#/password-reset"
     },
     "aws_settings": {
         "s3": {
