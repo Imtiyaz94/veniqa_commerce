@@ -52,7 +52,7 @@ export default {
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
-            await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
+            // await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
             return result;

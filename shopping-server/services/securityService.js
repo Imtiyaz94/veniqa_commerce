@@ -30,7 +30,7 @@ export default {
 
             // If we have gotten here, the request must be successful, so respond accordingly
             logger.info("A new user has signed up", { meta: user });
-            console.log("email confirm", user.emailConfirmationToken);
+            // console.log("email confirm", user.emailConfirmationToken);
             emailService.emailEmailConfirmationInstructions(user.email, user.name, user.emailConfirmationToken);
             let responseObj = { email: user.email, name: user.name };
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: responseObj };
