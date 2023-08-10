@@ -129,9 +129,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import AddProduct from '@/components/homepage/AddProduct.vue';
 import Permission from '@/constants/permissions';
-import { mapGetters } from 'vuex';
 
 export default {
   components: {
