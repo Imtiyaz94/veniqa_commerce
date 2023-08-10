@@ -49,65 +49,65 @@ let productSchema = new mongoose.Schema({
     thumbnailUrls: {
         type: Array,
         of: String,
-        required: false,
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
+        required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
                     return false;
                 }
             }
             return true;
         }
+        // validate: (value) => {
+        //     for (let entry of value) {
+        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
     },
     featuredImageUrls: {
         type: Array,
         of: String,
-        required: false,
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
+        required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
                     return false;
                 }
             }
             return true;
         }
+        // validate: (value) => {
+        //     for (let entry of value) {
+        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
     },
     detailedImageUrls: {
         type: Array,
         of: String,
-        required: false,
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if(!(validator.isURL(entry, {allow_underscores: true}) && entry.includes("s3.amazonaws.com"))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
+        required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
                     return false;
                 }
             }
             return true;
         }
+        // validate: (value) => {
+        //     for (let entry of value) {
+        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
     },
     marked_price: {
         type: priceSchema,

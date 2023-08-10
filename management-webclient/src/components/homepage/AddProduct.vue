@@ -460,8 +460,6 @@
 
 <script>
 import * as _ from 'lodash';
-import ManagePhoto from '@/components/homepage/ManagePhoto.vue';
-import CustomAttributes from '@/components/homepage/CustomAttributes.vue';
 // Import the editor
 import { Editor, EditorContent, EditorMenuBar } from 'tiptap';
 import { mapGetters } from 'vuex';
@@ -483,6 +481,8 @@ import {
   Underline,
   History
 } from 'tiptap-extensions';
+import CustomAttributes from '@/components/homepage/CustomAttributes.vue';
+import ManagePhoto from '@/components/homepage/ManagePhoto.vue';
 
 export default {
   props: {

@@ -52,7 +52,7 @@ export default {
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
-            // await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
+            await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
             return result;
@@ -313,7 +313,7 @@ export default {
     async uploadPermanentProductThumbnail(productId, imageUrl) {
         try {
             let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-
+            console.log('awsConn', awsConnections);
             // Go ahead and put the object
             const response = await awsConnections.s3.putObject({
                 Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
@@ -321,6 +321,8 @@ export default {
                 Body: res.data,
                 ContentType: 'image/png'
             }).promise();
+            console.log("image url", response);
+            return response;
         }
         catch (err) {
             throw { message: "Error while uploading permanent thumbnail to S3", error: err };
