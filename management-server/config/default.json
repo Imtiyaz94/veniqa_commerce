@@ -35,7 +35,7 @@
     "aws_settings": {
         "s3": {
             "buckets": {
-                "catalog_image_bucket": "veniqa-catalog-images-dev"
+                "catalog_image_bucket": "microcosmworkspoc"
             },
             "s3_resource_live_base_url": "https://s3.amazonaws.com",
             "presigned_url_expires_in": 600
