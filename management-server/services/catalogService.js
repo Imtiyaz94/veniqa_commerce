@@ -52,7 +52,7 @@ export default {
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
-            await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
+            // await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
             return result;
@@ -66,6 +66,7 @@ export default {
 
     async getProductDetails(productId) {
         let result = {};
+        console.log("get product", productId);
         try {
             let product = await Product.findOne({ _id: productId }).populate('category tariff').exec();
             result = product ? { httpStatus: httpStatus.OK, status: "successful", responseData: product } : { httpStatus: httpStatus.NOT_FOUND, status: "failed", errorDetails: httpStatus.getStatusText(httpStatus.NOT_FOUND) };
@@ -81,6 +82,7 @@ export default {
     async updateProductInCatalog(productObj, userObj) {
         let result = {};
         try {
+            console.log("update product", productObj);
             // Store the id and delete it from the received object, to prevent any accidental replacement of id field
             let id = productObj._id;
             if (!id) {
@@ -88,8 +90,11 @@ export default {
                 return result;
             }
             delete productObj._id;
-
+            // console.log("delete", delete productObj._id;)
             // Change audit related info
+            // let ids = await Product.findOne({ _id: id });
+            // console.log("tempproduct", ids);
+
             let tempProduct = await Product.findOne({ _id: id }, '-_id detailedImageUrls thumbnailUrls featuredImageUrls auditLog').exec();
             tempProduct.auditLog.updatedBy = { email: userObj.email, name: userObj.name };
             tempProduct.auditLog.updatedOn = new Date();
@@ -114,7 +119,7 @@ export default {
             }
 
             // Make the update and return the updated document. Also run validators. Mongoose warns only limited validation takes place doing this in update
-            let product = await Product.findOneAndUpdate({ _id: id }, productObj, { runValidators: true, new: true }).populate('category tariff').exec();
+            let product = await Product.findOneAndUpdate({ _id: id }, productObj, { runValidators: true, new: true }, { includeResultMetadata: true }).populate('category tariff').exec();
 
             if (!product) {
                 result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: httpStatus.getStatusText(httpStatus.BAD_REQUEST) };
@@ -131,7 +136,12 @@ export default {
                         Quiet: false
                     }
                 }, (err, data) => {
-
+                    if (err) {
+                        // Handle error if needed
+                        console.error("Error deleting objects from S3:", err);
+                    } else {
+                        console.log("Deleted objects from S3:", data);
+                    }
                 });
             }
 
