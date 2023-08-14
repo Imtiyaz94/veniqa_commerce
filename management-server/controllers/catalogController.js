@@ -28,6 +28,18 @@ export default {
         }
     },
 
+    async getAllProductsDetails(req, res, next) {
+        let response;
+        try {
+            response = await catalogService.getAllProductsDetails();
+            return res.status(response.httpStatus).send(response);
+        }
+        catch (err) {
+            logger.error("Error in getAllProductsDetails Controller", { meta: err });
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ httpStatus: httpStatus.INTERNAL_SERVER_ERROR, status: "failed", errorDetails: err });
+        }
+    },
+
     async getProductDetails(req, res, next) {
         let response;
         try {
@@ -44,6 +56,7 @@ export default {
         let response;
         try {
             response = await catalogService.updateProductInCatalog(req.body, req.user);
+            // console.log("update product controller", response);
             return res.status(response.httpStatus).send(response);
         }
         catch (err) {

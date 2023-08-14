@@ -17,6 +17,8 @@ router.post('/search', canViewCatalog, catalogController.searchCatalog);
 
 router.post('/addProduct', canManageCatalog, catalogController.addProductToCatalog);
 
+router.get('/getAllProductsDetails', canViewCatalog, catalogController.getAllProductsDetails);
+
 router.get('/getProductDetails', canViewCatalog, catalogController.getProductDetails);
 
 router.put('/updateProduct', canManageCatalog, catalogController.updateProductInCatalog);
