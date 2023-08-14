@@ -232,6 +232,29 @@
 					"response": []
 				},
 				{
+					"name": "getAllProductsDetails",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/catalog/getAllProductsDetails",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"catalog",
+								"getAllProductsDetails"
+							]
+							
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "getProductDetails",
 					"request": {
 						"method": "GET",
