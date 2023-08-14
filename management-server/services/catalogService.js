@@ -5,6 +5,7 @@ import awsConnections from '../cloudservices/awsConnections';
 import httpStatus from 'http-status-codes';
 import axios from 'axios';
 import logger from '../logging/logger';
+import mongoose from 'mongoose';
 
 export default {
     async searchCatalog(pagingOptions, searchTerm, sortRule) {
@@ -78,11 +79,25 @@ export default {
             return result;
         }
     },
+    async getAllProductsDetails() {
+        let result = {};
+        // console.log("get product", productId);
+        try {
+            let products = await Product.find().select('-weight -tariff -customizationOptions -custom_attributes -auditLog -details_html -store_sku -active  ').exec();
+            // console.log("all products", products);
+            result = products ? { httpStatus: httpStatus.OK, status: "successful", responseData: products } : { httpStatus: httpStatus.NOT_FOUND, status: "failed", errorDetails: httpStatus.getStatusText(httpStatus.NOT_FOUND) };
+            return result;
+        }
+        catch (err) {
+            logger.error("Error in getAllProductsDetails Service", { meta: err });
+            result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: err };
+            return result;
+        }
+    },
 
     async updateProductInCatalog(productObj, userObj) {
         let result = {};
         try {
-            console.log("update product", productObj);
             // Store the id and delete it from the received object, to prevent any accidental replacement of id field
             let id = productObj._id;
             if (!id) {
@@ -95,8 +110,12 @@ export default {
             // let ids = await Product.findOne({ _id: id });
             // console.log("tempproduct", ids);
 
-            let tempProduct = await Product.findOne({ _id: id }, '-_id detailedImageUrls thumbnailUrls featuredImageUrls auditLog').exec();
+            // let tempProduct = await Product.findOne({ _id: id }, '-_id detailedImageUrls thumbnailUrls featuredImageUrls auditLog').exec();
+            let tempProduct = await Product.findOne({ _id: id })
+                .select('-_id detailedImageUrls thumbnailUrls featuredImageUrls auditLog').exec();
+
             tempProduct.auditLog.updatedBy = { email: userObj.email, name: userObj.name };
+            // console.log("auitlog", tempProduct.auditLog.updatedBy);
             tempProduct.auditLog.updatedOn = new Date();
             productObj.auditLog = tempProduct.auditLog;
 
@@ -119,7 +138,28 @@ export default {
             }
 
             // Make the update and return the updated document. Also run validators. Mongoose warns only limited validation takes place doing this in update
-            let product = await Product.findOneAndUpdate({ _id: id }, productObj, { runValidators: true, new: true }, { includeResultMetadata: true }).populate('category tariff').exec();
+
+            // Set the useFindAndModify option to false
+            // mongoose.set('useFindAndModify', false);
+
+            // let product = await Product.findOneAndUpdate({ _id: id }, productObj, { runValidators: true, new: true, includeResultMetadata: true }).populate('category tariff').exec();
+
+            console.log("Fetching product with ID:", id);
+
+            let product = await Product.findOneAndUpdate(
+                { _id: id },                    // Query condition
+                productObj,                     // Update data
+                {                               // Options
+                    runValidators: true,
+                    new: true,
+                    includeResultMetadata: true
+                }
+            ).populate('category tariff').exec();
+
+            console.log("Product fetched and updated:", product);
+
+            // console.log("update product", product);
+
 
             if (!product) {
                 result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: httpStatus.getStatusText(httpStatus.BAD_REQUEST) };
@@ -143,12 +183,16 @@ export default {
                         console.log("Deleted objects from S3:", data);
                     }
                 });
+
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
+
+            console.log("update product url", product.thumbnailUrls[0]);
             await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
+
             return result;
         }
         catch (err) {
@@ -320,22 +364,51 @@ export default {
         }
     },
 
+    // async uploadPermanentProductThumbnail(productId, imageUrl) {
+    //     try {
+    //         console.log("fetching image", imageUrl);
+    //         let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    //         console.log('awsConn', awsConnections);
+    //         // Go ahead and put the object
+    //         const response = await awsConnections.s3.putObject({
+    //             Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+    //             Key: 'permanent-thumbnails/' + productId,
+    //             Body: res.data,
+    //             ContentType: 'image/png'
+    //         }).promise();
+    //         console.log("image url", response);
+    //         return response;
+    //     }
+    //     catch (err) {
+    //         throw { message: "Error while uploading permanent thumbnail to S3", error: err };
+    //     }
+    // }
     async uploadPermanentProductThumbnail(productId, imageUrl) {
         try {
+            console.log("Fetching image:", imageUrl);
             let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-            console.log('awsConn', awsConnections);
-            // Go ahead and put the object
+            console.log("Fetched image:", productId);
+
+            // console.log('awsConn', awsConnections);
+
+            const bucketName = config.get('aws_settings.s3.buckets.catalog_image_bucket');
+            const key = 'permanent-thumbnails/' + productId;
+
+            console.log("Uploading image to S3 - Bucket:", bucketName, "Key:", key);
+
             const response = await awsConnections.s3.putObject({
-                Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-                Key: 'permanent-thumbnails/' + productId,
+                Bucket: bucketName,
+                Key: key,
                 Body: res.data,
                 ContentType: 'image/png'
             }).promise();
-            console.log("image url", response);
+
+            console.log("Image uploaded successfully. S3 Response:", response);
             return response;
-        }
-        catch (err) {
+        } catch (err) {
+            console.error("Error while uploading permanent thumbnail to S3:");
             throw { message: "Error while uploading permanent thumbnail to S3", error: err };
         }
     }
+
 };
