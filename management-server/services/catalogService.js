@@ -53,7 +53,7 @@ export default {
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
-            // await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
+            await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
             return result;
@@ -114,8 +114,8 @@ export default {
             let tempProduct = await Product.findOne({ _id: id })
                 .select('-_id detailedImageUrls thumbnailUrls featuredImageUrls auditLog').exec();
 
+            // console.log("auditlog", tempProduct);
             tempProduct.auditLog.updatedBy = { email: userObj.email, name: userObj.name };
-            // console.log("auitlog", tempProduct.auditLog.updatedBy);
             tempProduct.auditLog.updatedOn = new Date();
             productObj.auditLog = tempProduct.auditLog;
 
@@ -144,7 +144,7 @@ export default {
 
             // let product = await Product.findOneAndUpdate({ _id: id }, productObj, { runValidators: true, new: true, includeResultMetadata: true }).populate('category tariff').exec();
 
-            console.log("Fetching product with ID:", id);
+            // console.log("Fetching product with ID:", id);
 
             let product = await Product.findOneAndUpdate(
                 { _id: id },                    // Query condition
@@ -156,10 +156,9 @@ export default {
                 }
             ).populate('category tariff').exec();
 
-            console.log("Product fetched and updated:", product);
+            // console.log("Product fetched and updated:", product);
 
             // console.log("update product", product);
-
 
             if (!product) {
                 result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: httpStatus.getStatusText(httpStatus.BAD_REQUEST) };
@@ -188,7 +187,7 @@ export default {
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
 
-            console.log("update product url", product.thumbnailUrls[0]);
+            // console.log("update product url", product.thumbnailUrls[0]);
             await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
@@ -207,7 +206,7 @@ export default {
         try {
             // Remove the product
             let product = await Product.findOne({ _id: productId }).exec();
-            let res = await Product.remove({ _id: productId }).exec();
+            let res = await Product.deleteOne({ _id: productId }).exec();
 
             // if removal not successful, return failure
             if (!res) {
@@ -244,7 +243,12 @@ export default {
                         Quiet: false
                     }
                 }, (err, data) => {
-
+                    if (err) {
+                        logger.error("Error in deleting image ", { meta: err });
+                    }
+                    else {
+                        return data;
+                    }
                 });
             }
 
@@ -262,6 +266,7 @@ export default {
         let result = {};
         try {
             // Limit the max number of images the urls can be requested for at once.
+
             if (numberOfThumbnailAndDetailedImages > 7 || numberOfFeaturedImages > 7) {
                 result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: "Maximum number of allowed images for each type is 7" };
                 return result;
@@ -271,6 +276,7 @@ export default {
             // If a productId was passed and the product is found, use its existing image urls to find corresponding s3 folder, otherwise generate a new folder name
             if (productId) {
                 product = await Product.findOne({ _id: productId }).exec();
+                console.log("product in presignedUrl", product);
                 if (product && product.detailedImageUrls && product.detailedImageUrls.length > 0) {
                     // Extracting the folder name
                     let extractionUrl = product.detailedImageUrls[0];
@@ -305,9 +311,17 @@ export default {
                 let thumbnailUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
                     Key: thumbnailObjectKey,
-                    ContentType: 'image/png',
+                    ContentType: 'image/jpeg',
+                    // ContentType: 'application/octet-stream',
                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
                 });
+                // let thumbnailUploadUrl = awsConnections.s3.putObject({
+                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                //     Key: thumbnailObjectKey,
+                //     ContentType: 'image/png',
+                //     // ContentType: 'application/octet-stream',
+                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+                // }).promise();
 
                 response.thumbnailUrls.push({
                     uploadUrl: thumbnailUploadUrl,
@@ -322,9 +336,18 @@ export default {
                 let detailedImageUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
                     Key: detailedImageObjectKey,
-                    ContentType: 'image/png',
+                    ContentType: 'image/jpeg',
+                    // ContentType: 'application/octet-stream',
                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
                 });
+
+                // let detailedImageUploadUrl = awsConnections.s3.putObject({
+                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                //     Key: detailedImageObjectKey,
+                //     ContentType: 'image/png',
+                //     // ContentType: 'application/octet-stream',
+                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+                // }).promise();
 
                 response.detailedImageUrls.push({
                     uploadUrl: detailedImageUploadUrl,
@@ -343,9 +366,18 @@ export default {
                 let presignedUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
                     Key: objectKey,
-                    ContentType: 'image/png',
+                    ContentType: 'image/jpeg',
+                    // ContentType: 'application/octet-stream',
                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
                 });
+
+                // let presignedUploadUrl = awsConnections.s3.putObject({
+                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                //     Key: objectKey,
+                //     ContentType: 'image/jpeg',
+                //     // ContentType: 'application/octet-stream',
+                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+                // }).promise();
 
                 response.featuredImageUrls.push({
                     uploadUrl: presignedUploadUrl,
@@ -364,51 +396,187 @@ export default {
         }
     },
 
-    // async uploadPermanentProductThumbnail(productId, imageUrl) {
-    //     try {
-    //         console.log("fetching image", imageUrl);
-    //         let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    //         console.log('awsConn', awsConnections);
-    //         // Go ahead and put the object
-    //         const response = await awsConnections.s3.putObject({
-    //             Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-    //             Key: 'permanent-thumbnails/' + productId,
-    //             Body: res.data,
-    //             ContentType: 'image/png'
-    //         }).promise();
-    //         console.log("image url", response);
-    //         return response;
-    //     }
-    //     catch (err) {
-    //         throw { message: "Error while uploading permanent thumbnail to S3", error: err };
-    //     }
-    // }
+
+    //     async getPresignedUrlsForCatalogImageUploads(productId, numberOfThumbnailAndDetailedImages, numberOfFeaturedImages) {
+    //         let result = {};
+    // 
+    //         try {
+    //             // Check if the number of images requested exceeds the limit
+    //             if (numberOfThumbnailAndDetailedImages > 7 || numberOfFeaturedImages > 7) {
+    //                 result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: "Maximum number of allowed images for each type is 7" };
+    //                 return result;
+    //             }
+    // 
+    //             let folderName, product;
+    // 
+    //             // Determine folderName based on productId and existing images
+    //             if (productId) {
+    //                 product = await Product.findOne({ _id: productId }).exec();
+    //                 console.log("product in presignedUrl", product);
+    //                 if (product && product.detailedImageUrls && product.detailedImageUrls.length > 0) {
+    //                     // Extract folder name from existing image URL
+    //                     let extractionUrl = product.detailedImageUrls[0];
+    //                     folderName = extractionUrl.split('/')[4];
+    //                 } else {
+    //                     folderName = await cryptoGen.generateRandomToken();
+    //                 }
+    //             } else {
+    //                 // Generate a random folder name
+    //                 folderName = await cryptoGen.generateRandomToken();
+    //             }
+    // 
+    //             // Prepare the response object
+    //             let response = {
+    //                 thumbnailUrls: [],
+    //                 detailedImageUrls: [],
+    //                 featuredImageUrls: []
+    //             };
+    // 
+    //             // Generate URLs for thumbnail and detailed images
+    //             for (let index = 0; index < numberOfThumbnailAndDetailedImages; index++) {
+    //                 // Generate a unique filename for the image
+    //                 let filename = await cryptoGen.generateRandomToken();
+    // 
+    //                 // GENERATE LINKS FOR THE THUMBNAIL FIRST
+    //                 let thumbnailObjectKey = folderName + "/thumbnails/" + filename;
+    //                 let thumbnailLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + thumbnailObjectKey;
+    // 
+    //                 let thumbnailUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
+    //                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+    //                     Key: thumbnailObjectKey,
+    //                     ContentType: 'image/png',
+    //                     // ContentType: 'application/octet-stream',
+    //                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+    //                 });
+    // 
+    //                 response.thumbnailUrls.push({
+    //                     uploadUrl: thumbnailUploadUrl,
+    //                     liveUrl: thumbnailLiveUrl
+    //                 });
+    // 
+    //                 // GENERATE LINKS FOR THE DETAILED IMAGES NEXT
+    //                 let detailedImageObjectKey = folderName + "/detailed-images/" + filename;
+    //                 let detailedImageLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + detailedImageObjectKey;
+    // 
+    //                 let detailedImageUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
+    //                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+    //                     Key: detailedImageObjectKey,
+    //                     ContentType: 'image/png',
+    //                     // ContentType: 'application/octet-stream',
+    //                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+    //                 });
+    // 
+    //                 response.detailedImageUrls.push({
+    //                     uploadUrl: detailedImageUploadUrl,
+    //                     liveUrl: detailedImageLiveUrl
+    //                 });
+    //             }
+    // 
+    //             // Generate URLs for featured images
+    //             for (let index = 0; index < numberOfFeaturedImages; index++) {
+    //                 // Generate a unique filename for the image
+    //                 let filename = await cryptoGen.generateRandomToken();
+    //                 let objectKey = folderName + "/featured-images/" + filename;
+    //                 let objectLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + objectKey;
+    // 
+    //                 let presignedUploadUrl = awsConnections.s3.getSignedUrl('putObject', {
+    //                     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+    //                     Key: objectKey,
+    //                     ContentType: 'image/png',
+    //                     // ContentType: 'application/octet-stream',
+    //                     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
+    //                 });
+    // 
+    //                 response.featuredImageUrls.push({
+    //                     uploadUrl: presignedUploadUrl,
+    //                     liveUrl: objectLiveUrl
+    //                 });
+    //             }
+    // 
+    //             // Return generated URLs
+    //             result = { httpStatus: httpStatus.OK, status: "successful", responseData: response };
+    //             return result;
+    //         } catch (err) {
+    //             logger.error("Error in getPresignedUrlsForCatalogImageUploads Service", { meta: err });
+    //             result = { httpStatus: httpStatus.BAD_REQUEST, status: "failed", errorDetails: err };
+    //             return result;
+    //         }
+    //     },
+
     async uploadPermanentProductThumbnail(productId, imageUrl) {
         try {
-            console.log("Fetching image:", imageUrl);
+            console.log("fetching image", imageUrl);
+
             let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-            console.log("Fetched image:", productId);
 
-            // console.log('awsConn', awsConnections);
-
-            const bucketName = config.get('aws_settings.s3.buckets.catalog_image_bucket');
-            const key = 'permanent-thumbnails/' + productId;
-
-            console.log("Uploading image to S3 - Bucket:", bucketName, "Key:", key);
-
-            const response = await awsConnections.s3.putObject({
-                Bucket: bucketName,
-                Key: key,
+            console.log('fetched image res', res);
+            // Go ahead and put the object
+            // awsConnections.s3.putObject;
+            const response = await awsConnections.s3.upload({
+                Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                Key: 'permanent-thumbnails/' + productId,
                 Body: res.data,
-                ContentType: 'image/png'
+                ContentType: 'image/jpeg',
+                // ContentType: 'application/octet-stream'
             }).promise();
-
-            console.log("Image uploaded successfully. S3 Response:", response);
+            console.log("image url", response);
             return response;
+        }
+        catch (err) {
+            throw { message: "Error while uploading permanent thumbnail to S3", error: err };
+        }
+    },
+
+    async uploadPermanentProductThumbnail(productId, imageUrl) {
+        try {
+            console.log("fetching image", productId);
+
+            let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+
+            console.log('fetched image res', res.data);
+            // Go ahead and put the object
+            const response = await awsConnections.s3.putObject({
+                Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                Key: 'permanent-thumbnails/' + productId,
+                Body: res.data,
+                ContentType: 'image/jpeg',
+                // ContentType: 'application/octet-stream'
+            }).promise();
+            console.log("image url", response);
+            return response;
+        }
+        catch (err) {
+            throw { message: "Error while uploading permanent thumbnail to S3", error: err };
+        }
+    },
+
+    async uploadPermanentProductThumbnail(productId, imageUrl) {
+        try {
+            console.log("fetching image", productId);
+
+            // Fetch the image using axios
+            let response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+
+            console.log('fetched image response', response);
+
+            // Upload the fetched image to AWS S3
+            const s3Key = 'permanent-thumbnails/' + productId;
+            const uploadParams = {
+                Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                Key: s3Key,
+                Body: response.data,
+                ContentType: 'image/jpeg', // Set the appropriate content type
+            };
+
+            const s3UploadResponse = await awsConnections.s3.putObject(uploadParams).promise();
+            console.log("S3 upload response", s3UploadResponse);
+
+            return s3UploadResponse; // Return the S3 upload response
         } catch (err) {
-            console.error("Error while uploading permanent thumbnail to S3:");
+            console.error("Error while uploading permanent thumbnail to S3");
             throw { message: "Error while uploading permanent thumbnail to S3", error: err };
         }
     }
+
 
 };

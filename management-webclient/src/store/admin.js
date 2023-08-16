@@ -66,23 +66,49 @@ export default {
         throw new Error(err);
       }
     },
+    // async editProduct({ dispatch }, product) {
+    //   try {
+    //     const { data } = await Vue.prototype.$axios({
+    //       url: ProxyUrl.editProduct,
+    //       withCredentials: true,
+    //       method: 'put',
+    //       data: product
+    //     });
+    //     console.log('edit data', data);
+    //     if (data && data.httpStatus === 200) {
+    //       dispatch('getAllProducts');
+    //     } else throw new Error('No Content');
+    //   } catch (err) {
+    //     console.log(err);
+    //     throw new Error(err);
+    //   }
+    // },
     async editProduct({ dispatch }, product) {
       try {
-        const { data } = await Vue.prototype.$axios({
+        console.log('Editing product:', product);
+
+        const response = await Vue.prototype.$axios({
           url: ProxyUrl.editProduct,
           withCredentials: true,
           method: 'put',
           data: product
         });
 
-        if (data && data.httpStatus === 200) {
+        console.log('Edit response data:', response.data);
+
+        if (response.data && response.data.httpStatus === 200) {
+          console.log("Dispatching 'getAllProducts'");
           dispatch('getAllProducts');
-        } else throw new Error('No Content');
+        } else {
+          console.error('Edit request failed. Response:', response.data);
+          throw new Error('No Content');
+        }
       } catch (err) {
-        console.log(err);
+        console.error('Error during product editing:', err);
         throw new Error(err);
       }
     },
+
     async getProduct(
       {
         // eslint-disable-next-line no-unused-vars

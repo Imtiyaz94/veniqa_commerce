@@ -189,7 +189,7 @@ export default {
       this.detailedUrls.forEach((imageUrl, index) => {
         // for (let index = 0; index < this.detailedUrls.length ; index++){
         // For detailed images
-        // console.log("Sending to url", this.detailedUrls[index])
+        console.log('Sending to url', this.detailedUrls[index]);
         const newObj = {
           name: this.getFileName(imageUrl),
           thumbnailBlob: null,
