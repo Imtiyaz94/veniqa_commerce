@@ -20,6 +20,7 @@ export default {
         console.log('adding product', req.body);
         try {
             response = await catalogService.addProductToCatalog(req.body, req.user);
+            console.log("res in add_product catalog", response);
             return res.status(response.httpStatus).send(response);
         }
         catch (err) {

@@ -55,7 +55,8 @@ export default {
           url: ProxyUrl.addProduct,
           withCredentials: true,
           method: 'post',
-          data: product
+          data: product,
+
         });
 
         if (data && data.httpStatus === 200) {

@@ -10,6 +10,6 @@ AWS.config.update({
 });
 
 // Initialize S3 module
-let s3 = new AWS.S3();
+let s3 = new AWS.S3({ signatureVersion: 'v4' });
 
 module.exports.s3 = s3;

@@ -11,8 +11,8 @@
       </b-col>
       <b-col>
         <div class="align-right">
-          <!-- <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div> -->
-          <!-- <div class="btn btn-primary" @click="saveAll()">Save All</div> -->
+          <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div>
+          <div class="btn btn-primary" @click="saveAll()">Save All</div>
           &nbsp;
           <div class="btn btn-primary" @click="$emit('cancel')">Done</div>
         </div>
@@ -115,11 +115,11 @@ export default {
       type: Array,
     },
 
-    // featuredUrls: {
-    //   required: false,
-    //   default: null,
-    //   type: Array,
-    // },
+    featuredUrls: {
+      required: false,
+      default: null,
+      type: Array,
+    },
 
     thumbnailPropUrls: {
       required: false,
@@ -133,11 +133,11 @@ export default {
       type: String,
     },
 
-    // preassignedUrls: {
-    //   required: false,
-    //   default: null,
-    //   type: Object,
-    // },
+    preassignedUrls: {
+      required: false,
+      default: null,
+      type: Object,
+    },
   },
   data() {
     return {
@@ -155,7 +155,7 @@ export default {
        *   name: '', // unique
        *   largeBlob: '',
        *   thumbnailBlob: ''
-       *   featured: false
+       *   featured: true
        * }
        */
       finalImages: [],
@@ -195,7 +195,7 @@ export default {
           thumbnailBlob: null,
           largeBlob: null,
           displayUrl: imageUrl,
-          featured: false,
+          featured: true,
         };
         this.finalImages[index] = _.cloneDeep(newObj);
         const url = window.location.href;
@@ -207,7 +207,7 @@ export default {
           method: 'get',
           url: this.detailedUrls[index].replace('https', protocol),
           responseType: 'arraybuffer',
-          headers: { 'Access-Control-Allow-Origin': '*' }
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
         })
           .then((res) => {
             this.finalImages[index].largeBlob = new File(
@@ -219,7 +219,7 @@ export default {
             this.finalImages[index].displayUrl = _.cloneDeep(
               this.detailedUrls[index],
             );
-            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index])
+            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index]);
             // done();
           })
           .catch((err) => {
@@ -234,7 +234,27 @@ export default {
           method: 'get',
           url: this.thumbnailPropUrls[index].replace('https', protocol),
           responseType: 'arraybuffer',
-          headers: { 'Access-Control-Allow-Origin': '*' }
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
+        })
+          .then((res) => {
+            this.finalImages[index].thumbnailBlob = new File(
+              [res.data],
+              this.getFileName(imageUrl),
+              { type: 'image/png' },
+            );
+            // done();
+          })
+          .catch(err => {
+            console.log('Error msg', err.message);
+            this.handleError('image');
+          });
+
+        this.$axios({
+          withCredentials: false,
+          method: 'get',
+          url: this.thumbnailPropUrls[index].replace('https', protocol),
+          responseType: 'arraybuffer',
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
         })
           .then((res) => {
             this.finalImages[index].thumbnailBlob = new File(
@@ -284,8 +304,8 @@ export default {
             url: ProxyUrls.predefinedUrls,
             params,
           });
-
           data = res.data.responseData;
+          console.log('DATA', data);
         } catch (error) {
           console.log('Preassign error');
           reject(error);
@@ -295,8 +315,7 @@ export default {
         // }
 
         const totalCallsToMake = data.detailedImageUrls.length
-          + data.thumbnailUrls.length;
-          // + data.featuredImageUrls.length;
+          + data.thumbnailUrls.length + data.featuredImageUrls.length;
 
         console.log('Total calls to make', totalCallsToMake);
 
@@ -348,7 +367,7 @@ export default {
           // Call for detailed image urls.
           this.$axios({
             headers: {
-              'Content-Type': 'image/png',
+              'Content-Type': 'image/*',
             },
             method: 'put',
             url: data.detailedImageUrls[ind].uploadUrl,
@@ -367,7 +386,7 @@ export default {
           // Call for thumbnails
           this.$axios({
             headers: {
-              'Content-Type': 'image/png',
+              'Content-Type': 'image/*',
             },
             method: 'put',
             url: data.thumbnailUrls[ind].uploadUrl,
@@ -384,25 +403,25 @@ export default {
             });
 
           // Call for Featured images.
-          // if (imageObj.featured) {
-          //   this.$axios({
-          //     headers: {
-          //       'Content-Type': 'image/png',
-          //     },
-          //     method: 'put',
-          //     url: data.featuredImageUrls[ind].uploadUrl,
-          //     data: imageObj.largeBlob,
-          //     withCredentials: false,
-          //   })
-          //     .then((res) => {
-          //       this.featuredImageUrls = data.featuredImageUrls[ind].liveUrl;
-          //       done();
-          //     })
-          //     .catch((err) => {
-          //       this.handleError(imageObj.name);
-          //       reject(data);
-          //     });
-          // }
+          if (imageObj.featured) {
+            this.$axios({
+              headers: {
+                'Content-Type': 'image/*',
+              },
+              method: 'put',
+              url: data.featuredImageUrls[ind].uploadUrl,
+              data: imageObj.largeBlob,
+              withCredentials: false,
+            })
+              .then(() => {
+                this.featuredImageUrls = data.featuredImageUrls[ind].liveUrl;
+                done();
+              })
+              .catch(() => {
+                this.handleError(imageObj.name);
+                reject(data);
+              });
+          }
         }
       });
     },
@@ -417,16 +436,16 @@ export default {
 
     configureParams() {
       let numberOfThumbnailAndDetailedImages = 0;
-      const numberOfFeaturedImages = 0;
+      let numberOfFeaturedImages = 0;
       // let numberOfDetailedImages = 0;
       const productId = this.productId ? this.productId : '';
 
-      this.finalImages.forEach(() => {
+      this.finalImages.forEach((imageObj) => {
         // Right now, everything is +1 except the featured images.
         // numberOfThumbnails += 1;
         // numberOfDetailedImages += 1;
         numberOfThumbnailAndDetailedImages += 1;
-        // numberOfFeaturedImages += imageObj.featured ? 1 : 0;
+        numberOfFeaturedImages += imageObj.featured ? 1 : 0;
       });
 
       return {
@@ -438,9 +457,9 @@ export default {
     },
 
     async cropImage() {
-      const largeBlob = await this.cropSection.promisedBlob('image/png');
+      const largeBlob = await this.cropSection.promisedBlob('image/*');
       const thumbnailBlob = await this.thumbnailCrop.promisedBlob(
-        'image/png',
+        'image/*',
         0.25,
       );
 
@@ -474,7 +493,7 @@ export default {
               thumbnailBlob: file,
               largeBlob: file,
               displayUrl: URL.createObjectURL(file),
-              featured: false,
+              featured: true,
             });
           }
         });
@@ -502,8 +521,8 @@ export default {
         const filename = this.getFileName(this.remoteUrl);
         const newObj = {
           name: filename,
-          thumbnailBlob: new File([data], filename, { type: 'image/png' }),
-          largeBlob: new File([data], filename, { type: 'image/png' }),
+          thumbnailBlob: new File([data], filename, { type: 'image/*' }),
+          largeBlob: new File([data], filename, { type: 'image/*' }),
           displayUrl: this.remoteUrl,
           featured: false,
         };
