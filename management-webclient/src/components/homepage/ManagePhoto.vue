@@ -11,8 +11,8 @@
       </b-col>
       <b-col>
         <div class="align-right">
-          <!-- <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div> -->
-          <!-- <div class="btn btn-primary" @click="saveAll()">Save All</div> -->
+          <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div>
+          <div class="btn btn-primary" @click="saveAll()">Save All</div>
           &nbsp;
           <div class="btn btn-primary" @click="$emit('cancel')">Done</div>
         </div>
@@ -115,11 +115,11 @@ export default {
       type: Array,
     },
 
-    // featuredUrls: {
-    //   required: false,
-    //   default: null,
-    //   type: Array,
-    // },
+    featuredUrls: {
+      required: false,
+      default: null,
+      type: Array,
+    },
 
     thumbnailPropUrls: {
       required: false,
@@ -133,11 +133,11 @@ export default {
       type: String,
     },
 
-    // preassignedUrls: {
-    //   required: false,
-    //   default: null,
-    //   type: Object,
-    // },
+    preassignedUrls: {
+      required: false,
+      default: null,
+      type: Object,
+    },
   },
   data() {
     return {
@@ -155,7 +155,7 @@ export default {
        *   name: '', // unique
        *   largeBlob: '',
        *   thumbnailBlob: ''
-       *   featured: false
+       *   featured: true
        * }
        */
       finalImages: [],
@@ -181,21 +181,22 @@ export default {
     };
   },
 
-  async created() {
+  created() {
     if (this.detailedUrls && this.detailedUrls.length > 0) {
       // ASSUMPTION: The detailed urls and thumbnail urls are always going to be the same.
       this.finalImages = new Array(this.detailedUrls.length).fill(null);
 
       this.detailedUrls.forEach((imageUrl, index) => {
         // for (let index = 0; index < this.detailedUrls.length ; index++){
+
         // For detailed images
-        // console.log("Sending to url", this.detailedUrls[index])
+        console.log('Sending to url', this.detailedUrls[index]);
         const newObj = {
           name: this.getFileName(imageUrl),
           thumbnailBlob: null,
           largeBlob: null,
           displayUrl: imageUrl,
-          featured: false,
+          featured: true,
         };
         this.finalImages[index] = _.cloneDeep(newObj);
         const url = window.location.href;
@@ -207,7 +208,7 @@ export default {
           method: 'get',
           url: this.detailedUrls[index].replace('https', protocol),
           responseType: 'arraybuffer',
-          headers: { 'Access-Control-Allow-Origin': '*' }
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
         })
           .then((res) => {
             this.finalImages[index].largeBlob = new File(
@@ -219,7 +220,8 @@ export default {
             this.finalImages[index].displayUrl = _.cloneDeep(
               this.detailedUrls[index],
             );
-            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index])
+            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index]);
+            console.log('final images', this.finalImages, this.detailedImageUrls);
             // done();
           })
           .catch((err) => {
@@ -234,7 +236,7 @@ export default {
           method: 'get',
           url: this.thumbnailPropUrls[index].replace('https', protocol),
           responseType: 'arraybuffer',
-          headers: { 'Access-Control-Allow-Origin': '*' }
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
         })
           .then((res) => {
             this.finalImages[index].thumbnailBlob = new File(
@@ -246,6 +248,33 @@ export default {
           })
           .catch(err => {
             console.log('Error msg', err.message);
+            this.handleError('image');
+          });
+
+        // For Featured image
+        this.$axios({
+          withCredentials: false,
+          method: 'get',
+          url: this.featuredUrls[index].replace('https', protocol),
+          responseType: 'arraybuffer',
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        })
+          .then((res) => {
+            this.finalImages[index].largeBlob = new File(
+              [res.data],
+              this.getFileName(imageUrl),
+              { type: 'image/png' },
+            );
+            this.finalImages[index].name = this.getFileName(imageUrl);
+            this.finalImages[index].displayUrl = _.cloneDeep(
+              this.featuredUrls[index],
+            );
+            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index])
+            // done();
+          })
+          .catch((err) => {
+            console.log('Error message', err.message);
+            console.log(err);
             this.handleError('image');
           });
       });
@@ -276,7 +305,7 @@ export default {
          * thumbnailUrls: [same as above]
          *
          */
-        let data = null;
+        let data = [];
         // if (!this.preassignedUrls) {
         try {
           const res = await this.$axios({
@@ -284,8 +313,8 @@ export default {
             url: ProxyUrls.predefinedUrls,
             params,
           });
-
           data = res.data.responseData;
+          console.log('DATA', data);
         } catch (error) {
           console.log('Preassign error');
           reject(error);
@@ -295,8 +324,7 @@ export default {
         // }
 
         const totalCallsToMake = data.detailedImageUrls.length
-          + data.thumbnailUrls.length;
-          // + data.featuredImageUrls.length;
+          + data.thumbnailUrls.length + data.featuredImageUrls.length;
 
         console.log('Total calls to make', totalCallsToMake);
 
@@ -332,7 +360,7 @@ export default {
         this.featuredImageUrls = new Array(data.featuredImageUrls.length).fill(
           '',
         );
-        this.thumbnailUrls = new Array(data.thumbnailUrls.length).fill('');
+        this.thumbnailUrls = new Array(data.thumbnailUrls.length).fill('',);
 
         /** This loop goes through each image there is and then asynchronously makes all the upload calls.
          * done() is called everytime the request passes with success. This will run the done function from above
@@ -344,7 +372,7 @@ export default {
         // this.finalImages.forEach((imageObj, ind) => {
         for (let ind = 0; ind < this.finalImages.length; ind += 1) {
           const imageObj = this.finalImages[ind];
-
+          console.log('imageobje', imageObj);
           // Call for detailed image urls.
           this.$axios({
             headers: {
@@ -376,6 +404,7 @@ export default {
           })
             .then(() => {
               this.thumbnailUrls[ind] = data.thumbnailUrls[ind].liveUrl;
+
               done();
             })
             .catch(() => {
@@ -384,25 +413,25 @@ export default {
             });
 
           // Call for Featured images.
-          // if (imageObj.featured) {
-          //   this.$axios({
-          //     headers: {
-          //       'Content-Type': 'image/png',
-          //     },
-          //     method: 'put',
-          //     url: data.featuredImageUrls[ind].uploadUrl,
-          //     data: imageObj.largeBlob,
-          //     withCredentials: false,
-          //   })
-          //     .then((res) => {
-          //       this.featuredImageUrls = data.featuredImageUrls[ind].liveUrl;
-          //       done();
-          //     })
-          //     .catch((err) => {
-          //       this.handleError(imageObj.name);
-          //       reject(data);
-          //     });
-          // }
+          if (imageObj.featured) {
+            this.$axios({
+              headers: {
+                'Content-Type': 'image/png',
+              },
+              method: 'put',
+              url: data.featuredImageUrls[ind].uploadUrl,
+              data: imageObj.largeBlob,
+              withCredentials: false,
+            })
+              .then(() => {
+                this.featuredImageUrls[ind] = data.featuredImageUrls[ind].liveUrl;
+                done();
+              })
+              .catch(() => {
+                this.handleError(imageObj.name);
+                reject(data);
+              });
+          }
         }
       });
     },
@@ -417,16 +446,16 @@ export default {
 
     configureParams() {
       let numberOfThumbnailAndDetailedImages = 0;
-      const numberOfFeaturedImages = 0;
+      let numberOfFeaturedImages = 0;
       // let numberOfDetailedImages = 0;
       const productId = this.productId ? this.productId : '';
 
-      this.finalImages.forEach(() => {
+      this.finalImages.forEach((imageObj) => {
         // Right now, everything is +1 except the featured images.
         // numberOfThumbnails += 1;
         // numberOfDetailedImages += 1;
         numberOfThumbnailAndDetailedImages += 1;
-        // numberOfFeaturedImages += imageObj.featured ? 1 : 0;
+        numberOfFeaturedImages += imageObj.featured ? 1 : 0;
       });
 
       return {
@@ -438,9 +467,9 @@ export default {
     },
 
     async cropImage() {
-      const largeBlob = await this.cropSection.promisedBlob('image/png');
+      const largeBlob = await this.cropSection.promisedBlob('image/*');
       const thumbnailBlob = await this.thumbnailCrop.promisedBlob(
-        'image/png',
+        'image/*',
         0.25,
       );
 
@@ -474,7 +503,7 @@ export default {
               thumbnailBlob: file,
               largeBlob: file,
               displayUrl: URL.createObjectURL(file),
-              featured: false,
+              featured: true,
             });
           }
         });
@@ -502,8 +531,8 @@ export default {
         const filename = this.getFileName(this.remoteUrl);
         const newObj = {
           name: filename,
-          thumbnailBlob: new File([data], filename, { type: 'image/png' }),
-          largeBlob: new File([data], filename, { type: 'image/png' }),
+          thumbnailBlob: new File([data], filename, { type: 'image/*' }),
+          largeBlob: new File([data], filename, { type: 'image/*' }),
           displayUrl: this.remoteUrl,
           featured: false,
         };

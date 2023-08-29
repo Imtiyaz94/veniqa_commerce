@@ -6,7 +6,9 @@
       ref="managephoto"
       :detailedUrls="product.detailedImageUrls"
       :thumbnailPropUrls="product.thumbnailUrls"
+      v-bind:featuredUrls="product.featuredImageUrls"
       :productId="product._id"
+      :preassignedUrls="preassignedUrls"
       @cancel="showManagePhoto = false"
     />
 
@@ -499,7 +501,7 @@ export default {
       // Assign in assigns the values from data to product. This helps reduce the undefined errors by keeping the
       // defaults of product.
       this.product = _.assignIn(this.product, this.data);
-      // this.product = _.cloneDeep(this.data);
+      this.product = _.cloneDeep(this.data);
       this.product.tariff = this.product.tariff._id;
     }
   },
@@ -507,7 +509,7 @@ export default {
     return {
       showAttributes: false,
       editor: null,
-      // preassignedUrls: null,
+      preassignedUrls: null,
       product: {
         store: 'AMAZON',
         brand: 'BEVERLY HILLS KAY',
@@ -742,7 +744,7 @@ export default {
         await this.$store.dispatch('adminStore/addProduct', this.product);
         this.$emit('cancelTrigger');
       } catch (err) {
-        // if (err) this.preassignedUrls = null;
+        if (err) this.preassignedUrls = null;
         this.$notify({
           group: 'all',
           type: 'error',
@@ -773,7 +775,7 @@ export default {
         this.$store.commit('adminStore/resetProducts');
         this.$emit('cancelTrigger');
       } catch (err) {
-        // if (err) this.preassignedUrls = err;
+        if (err) this.preassignedUrls = err;
         this.$notify({
           group: 'all',
           type: 'error',

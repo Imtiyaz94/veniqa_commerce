@@ -186,7 +186,7 @@ export default {
     async pageLimitChanged(limit) {
       this.pagination.limit = limit;
       this.pageChanged(1);
-      // await this.$store.dispatch("adminStore/getAllProducts");
+      await this.$store.dispatch('adminStore/getAllProducts');
     },
     deleteProduct(id) {
       return this.$store.dispatch('adminStore/deleteProduct', id);

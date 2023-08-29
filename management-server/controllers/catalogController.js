@@ -17,9 +17,10 @@ export default {
 
     async addProductToCatalog(req, res, next) {
         let response;
-        console.log('adding product', req.body);
+        // console.log('adding product', req.body);
         try {
             response = await catalogService.addProductToCatalog(req.body, req.user);
+            console.log("res in add_product catalog", response);
             return res.status(response.httpStatus).send(response);
         }
         catch (err) {
@@ -55,6 +56,7 @@ export default {
     async updateProductInCatalog(req, res, next) {
         let response;
         try {
+            // console.log('req user', req.body);
             response = await catalogService.updateProductInCatalog(req.body, req.user);
             // console.log("update product controller", response);
             return res.status(response.httpStatus).send(response);
@@ -80,6 +82,7 @@ export default {
     async getPresignedUrlsForCatalogImageUploads(req, res, next) {
         let response;
         try {
+
             response = await catalogService.getPresignedUrlsForCatalogImageUploads(req.query.productId, req.query.numberOfThumbnailAndDetailedImages, req.query.numberOfFeaturedImages);
             return res.status(response.httpStatus).send(response);
         }
