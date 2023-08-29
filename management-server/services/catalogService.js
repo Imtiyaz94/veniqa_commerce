@@ -53,7 +53,9 @@ export default {
             }
 
             // Upload the brand new permanent thumbnail that will be preserved forever, throws error if unsuccessful
-            console.log("product url", product);
+            // console.log("product url", product.thumbnailUrls[0]);
+            // console.log("product url", product._id);
+
             await this.uploadPermanentProductThumbnail(product._id, product.thumbnailUrls[0]);
 
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: product };
@@ -308,28 +310,26 @@ export default {
                 // GENERATE LINKS FOR THE THUMBNAIL FIRST
                 let thumbnailObjectKey = folderName + "/thumbnails/" + filename;
 
-                console.log("thumbObjectKey", thumbnailObjectKey);
+                // console.log("thumbObjectKey", thumbnailObjectKey);
 
-                let thumbnailLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + thumbnailObjectKey;
+                // let thumbnailLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + thumbnailObjectKey;
 
-                console.log("thumbnailLiveUrl", thumbnailLiveUrl);
+                // let thumbnailLiveUrl = process.env.VENIQA_AWS_S3_LIVE_URL + "/" + process.env.VENIQA_AWS_BUCKET + "/" + thumbnailObjectKey;
+                const bucket = process.env.VENIQA_AWS_BUCKET;
+                const region = process.env.VENIQA_AWS_REGION;
+                let thumbnailLiveUrl = `https://${bucket}.s3.${region}.amazonaws.com/${thumbnailObjectKey}`;
 
-
-                let thumbnailUploadUrl = await awsConnections.s3.getSignedUrl('putObject', {
-                    Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                const params1 = {
+                    Bucket: process.env.VENIQA_AWS_BUCKET,
+                    Expires: process.env.VENIQA_AWS_EXPIRES_IN,
                     Key: thumbnailObjectKey,
-                    ContentType: "image/*",
-                    // ACL: "public-read",
-                    Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-                });
-                // console.log("thumbnailUploadUrl", thumbnailUploadUrl);
-                // let thumbnailUploadUrl = awsConnections.s3.putObject({
-                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-                //     Key: thumbnailObjectKey,
-                //     ContentType: 'image/png',
-                //     // ContentType: 'application/octet-stream',
-                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-                // }).promise();
+                    ContentType: 'image/jpeg', // Set the content type
+                    // ACL: 'public-read',
+                    // ContentType: 'application/octet-stream', // Set the content type
+                    // ContentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+
+                };
+                let thumbnailUploadUrl = awsConnections.s3.getSignedUrl('putObject', params1);
 
                 response.thumbnailUrls.push({
                     uploadUrl: thumbnailUploadUrl,
@@ -339,30 +339,32 @@ export default {
 
                 // GENERATE LINKS FOR THE DETAILED IMAGES NEXT
                 let detailedImageObjectKey = folderName + "/detailed-images/" + filename;
-                let detailedImageLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + detailedImageObjectKey;
+                // let detailedImageLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + detailedImageObjectKey;
 
-                let detailedImageUploadUrl = await awsConnections.s3.getSignedUrl('putObject', {
-                    Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                // let detailedImageLiveUrl = process.env.VENIQA_AWS_S3_LIVE_URL + "/" + process.env.VENIQA_AWS_BUCKET + "/" + detailedImageObjectKey;
+
+                // let detailedImageLiveUrl = "https://veniqaaws.s3.ap-south-1.amazonaws.com" + "/" + detailedImageObjectKey;
+
+                let detailedImageLiveUrl = `https://${bucket}.s3.${region}.amazonaws.com/${detailedImageObjectKey}`;
+
+                const params = {
+                    // Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                    // Expires: config.get('aws_settings.s3.presigned_url_expires_in'), // URL expiration time in seconds
+                    Bucket: process.env.VENIQA_AWS_BUCKET,
+                    Expires: process.env.VENIQA_AWS_EXPIRES_IN,
                     Key: detailedImageObjectKey,
-                    ContentType: "image/*",
-                    // ACL: "public-read",
-                    Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-
-                });
-                // console.log("detailedImageUploadUrl", detailedImageUploadUrl);
-                // let detailedImageUploadUrl = awsConnections.s3.putObject({
-                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-                //     Key: detailedImageObjectKey,
-                //     ContentType: 'image/png',
-                //     // ContentType: 'application/octet-stream',
-                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-                // }).promise();
+                    ContentType: 'image/jpeg', // Set the content type
+                    // ACL: 'public-read',
+                    // ContentType: 'application/octet-stream', // Set the content type
+                    // ContentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                };
+                let detailedImageUploadUrl = awsConnections.s3.getSignedUrl('putObject', params);
 
                 response.detailedImageUrls.push({
                     uploadUrl: detailedImageUploadUrl,
                     liveUrl: detailedImageLiveUrl
                 });
-            }
+            };
 
             // Generate the featured image urls and push it to the response object
             for (let index = 0; index < numberOfFeaturedImages; index++) {
@@ -370,24 +372,26 @@ export default {
                 // We couldn't replace existing files because if those images were cached in some user's system, the updated image wouldn't show up
                 let filename = await cryptoGen.generateRandomToken();
                 let objectKey = folderName + "/featured-images/" + filename;
-                let objectLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + objectKey;
+                // let objectLiveUrl = config.get('aws_settings.s3.s3_resource_live_base_url') + "/" + config.get('aws_settings.s3.buckets.catalog_image_bucket') + "/" + objectKey;
 
-                let presignedUploadUrl = await awsConnections.s3.getSignedUrl('putObject', {
-                    Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                // let objectLiveUrl = process.env.VENIQA_AWS_S3_LIVE_URL + "/" + process.env.VENIQA_AWS_BUCKET + "/" + objectKey;
+                const bucket = process.env.VENIQA_AWS_BUCKET;
+                const region = process.env.VENIQA_AWS_REGION;
+                let objectLiveUrl = `https://${bucket}.s3.${region}.amazonaws.com/${objectKey}`;
+
+                const params = {
+                    // Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                    // Expires: config.get('aws_settings.s3.presigned_url_expires_in'),
+                    Bucket: process.env.VENIQA_AWS_BUCKET,
+                    Expires: process.env.VENIQA_AWS_EXPIRES_IN,
                     Key: objectKey,
-                    ContentType: "image/*",
-                    // ACL: "public-read",
-                    Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-                });
-                // console.log("presignedUploadUrl", presignedUploadUrl);
+                    ContentType: 'image/jpeg', // Set the content type
+                    // ACL: 'public-read',
+                    // ContentType: 'application/octet-stream', // Set the content type
+                    // ContentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                };
+                let presignedUploadUrl = awsConnections.s3.getSignedUrl('putObject', params);
 
-                // let presignedUploadUrl = awsConnections.s3.putObject({
-                //     Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-                //     Key: objectKey,
-                //     ContentType: 'image/jpeg',
-                //     // ContentType: 'application/octet-stream',
-                //     Expires: config.get('aws_settings.s3.presigned_url_expires_in')
-                // }).promise();
 
                 response.featuredImageUrls.push({
                     uploadUrl: presignedUploadUrl,
@@ -396,6 +400,7 @@ export default {
             }
 
             // Returm all the generated urls
+            console.log('presigned urls', response);
             result = { httpStatus: httpStatus.OK, status: "successful", responseData: response };
             return result;
         }
@@ -407,62 +412,15 @@ export default {
     },
 
 
-    //     async uploadPermanentProductThumbnail(productId, imageUrl) {
-    //         try {
-    //             console.log("fetching image", imageUrl);
-    // 
-    //             let res = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    // 
-    //             console.log('fetched image res', res);
-    //             // Go ahead and put the object
-    //             // awsConnections.s3.putObject;
-    //             const response = await awsConnections.s3.upload({
-    //                 Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-    //                 Key: 'permanent-thumbnails/' + productId,
-    //                 Body: res.data,
-    //                 ContentType: 'image/jpeg',
-    //                 // ContentType: 'application/octet-stream'
-    //             }).promise();
-    //             console.log("image url", response);
-    //             return response;
-    //         }
-    //         catch (err) {
-    //             throw { message: "Error while uploading permanent thumbnail to S3", error: err };
-    //         }
-    //     },
-
-    //     async uploadPermanentProductThumbnail(productId, imageUrl) {
-    //         try {
-    //             console.log("fetching image", imageUrl);
-    // 
-    //             let res = await axios.get(imageUrl);
-    // 
-    //             console.log('fetched image res', res.data);
-    //             // Go ahead and put the object
-    //             const response = await awsConnections.s3.putObject({
-    //                 Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
-    //                 Key: 'permanent-thumbnails/' + productId,
-    //                 Body: res.data,
-    //                 ContentType: 'image/jpeg',
-    //                 // ContentType: 'application/octet-stream'
-    //             }).promise();
-    //             console.log("image url", response);
-    //             return response;
-    //         }
-    //         catch (err) {
-    //             throw { message: "Error while uploading permanent thumbnail to S3", error: err };
-    //         }
-    //     },
-
     async uploadPermanentProductThumbnail(productId, imageUrl) {
         try {
-            console.log("fetching image", imageUrl);
 
             // Fetch the image using axios
             let response = await axios.get(imageUrl, { responseType: 'arraybuffer' }).then((res) => {
-                console.log("axios get data", res);
+                console.log('res', res.data.data);
+                return res.data.data;
             }).catch((err) => {
-                console.log("axios get error", err.config);
+                console.log('err in axios call', err.config);
             });
 
             console.log('fetched image response', response);
@@ -470,15 +428,16 @@ export default {
             // Upload the fetched image to AWS S3
             const s3Key = 'permanent-thumbnails/' + productId;
             const uploadParams = {
-                Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                // Bucket: config.get('aws_settings.s3.buckets.catalog_image_bucket'),
+                Bucket: process.env.VENIQA_AWS_BUCKET,
                 Key: s3Key,
                 Body: response,
-                ContentType: "image/*",
-                // ContentType: 'image/jpeg', // Set the appropriate content type
+                ContentType: 'image/jpeg', // Set the appropriate content type
+                // ACL: 'public-read',
             };
+            const s3UploadResponse = await awsConnections.s3.getSignedUrl('putObject', uploadParams);
 
-            const s3UploadResponse = await awsConnections.s3.putObject(uploadParams).promise();
-            console.log("S3 upload response", s3UploadResponse);
+            // console.log("S3 upload response", s3UploadResponse);
 
             return s3UploadResponse; // Return the S3 upload response
         } catch (err) {

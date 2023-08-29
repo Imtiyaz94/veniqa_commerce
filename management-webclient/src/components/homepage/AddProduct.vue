@@ -6,7 +6,7 @@
       ref="managephoto"
       :detailedUrls="product.detailedImageUrls"
       :thumbnailPropUrls="product.thumbnailUrls"
-      :featuredUrls="product.featuredImageUrls"
+      v-bind:featuredUrls="product.featuredImageUrls"
       :productId="product._id"
       :preassignedUrls="preassignedUrls"
       @cancel="showManagePhoto = false"
@@ -738,7 +738,7 @@ export default {
         const saveImageRes = await this.$refs.managephoto.saveAll();
         if (saveImageRes) {
           this.imageUploadComplete(saveImageRes);
-          this.preassignedUrls = null;
+          // this.preassignedUrls = null;
         }
 
         await this.$store.dispatch('adminStore/addProduct', this.product);
@@ -769,7 +769,7 @@ export default {
         const saveImageRes = await this.$refs.managephoto.saveAll();
         if (saveImageRes) {
           this.imageUploadComplete(saveImageRes);
-          this.preassignedUrls = null;
+          // this.preassignedUrls = null;
         }
         await this.$store.dispatch('adminStore/editProduct', this.product);
         this.$store.commit('adminStore/resetProducts');

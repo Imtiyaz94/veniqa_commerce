@@ -10,6 +10,7 @@ import auditLogSchema from './auditLog';
 import customizationOptions from './customizationOptions';
 
 import STORES_ARRAY from '../reference-data-files/stores.json';
+const region = process.env.VENIQA_AWS_REGION;
 
 let productSchema = new mongoose.Schema({
     store: {
@@ -52,20 +53,12 @@ let productSchema = new mongoose.Schema({
         required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes(`s3.${region}.amazonaws.com`))) {
                     return false;
                 }
             }
             return true;
         }
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
     },
     featuredImageUrls: {
         type: Array,
@@ -73,20 +66,12 @@ let productSchema = new mongoose.Schema({
         required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes(`s3.${region}.amazonaws.com`))) {
                     return false;
                 }
             }
             return true;
         }
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
     },
     detailedImageUrls: {
         type: Array,
@@ -94,20 +79,12 @@ let productSchema = new mongoose.Schema({
         required: true,
         validate: (value) => {
             for (let entry of value) {
-                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes("s3.amazonaws.com"))) {
+                if (!(validator.isURL(entry, { allow_underscores: true }) && entry.includes(`s3.${region}.amazonaws.com`))) {
                     return false;
                 }
             }
             return true;
         }
-        // validate: (value) => {
-        //     for (let entry of value) {
-        //         if (!(validator.isURL(entry, { allow_underscores: true }))) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
     },
     marked_price: {
         type: priceSchema,

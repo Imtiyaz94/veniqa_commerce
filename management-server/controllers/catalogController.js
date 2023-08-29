@@ -17,7 +17,7 @@ export default {
 
     async addProductToCatalog(req, res, next) {
         let response;
-        console.log('adding product', req.body);
+        // console.log('adding product', req.body);
         try {
             response = await catalogService.addProductToCatalog(req.body, req.user);
             console.log("res in add_product catalog", response);

@@ -181,13 +181,14 @@ export default {
     };
   },
 
-  async created() {
+  created() {
     if (this.detailedUrls && this.detailedUrls.length > 0) {
       // ASSUMPTION: The detailed urls and thumbnail urls are always going to be the same.
       this.finalImages = new Array(this.detailedUrls.length).fill(null);
 
       this.detailedUrls.forEach((imageUrl, index) => {
         // for (let index = 0; index < this.detailedUrls.length ; index++){
+
         // For detailed images
         console.log('Sending to url', this.detailedUrls[index]);
         const newObj = {
@@ -220,6 +221,7 @@ export default {
               this.detailedUrls[index],
             );
             // console.log("Adding image in index", index, "with url ", this.detailedUrls[index]);
+            console.log('final images', this.finalImages, this.detailedImageUrls);
             // done();
           })
           .catch((err) => {
@@ -249,23 +251,30 @@ export default {
             this.handleError('image');
           });
 
+        // For Featured image
         this.$axios({
           withCredentials: false,
           method: 'get',
-          url: this.thumbnailPropUrls[index].replace('https', protocol),
+          url: this.featuredUrls[index].replace('https', protocol),
           responseType: 'arraybuffer',
-          headers: { 'Access-Control-Allow-Origin': '*', 'Content-type': 'image/*' }
+          headers: { 'Access-Control-Allow-Origin': '*' }
         })
           .then((res) => {
-            this.finalImages[index].thumbnailBlob = new File(
+            this.finalImages[index].largeBlob = new File(
               [res.data],
               this.getFileName(imageUrl),
               { type: 'image/png' },
             );
+            this.finalImages[index].name = this.getFileName(imageUrl);
+            this.finalImages[index].displayUrl = _.cloneDeep(
+              this.featuredUrls[index],
+            );
+            // console.log("Adding image in index", index, "with url ", this.detailedUrls[index])
             // done();
           })
-          .catch(err => {
-            console.log('Error msg', err.message);
+          .catch((err) => {
+            console.log('Error message', err.message);
+            console.log(err);
             this.handleError('image');
           });
       });
@@ -296,7 +305,7 @@ export default {
          * thumbnailUrls: [same as above]
          *
          */
-        let data = null;
+        let data = [];
         // if (!this.preassignedUrls) {
         try {
           const res = await this.$axios({
@@ -351,7 +360,7 @@ export default {
         this.featuredImageUrls = new Array(data.featuredImageUrls.length).fill(
           '',
         );
-        this.thumbnailUrls = new Array(data.thumbnailUrls.length).fill('');
+        this.thumbnailUrls = new Array(data.thumbnailUrls.length).fill('',);
 
         /** This loop goes through each image there is and then asynchronously makes all the upload calls.
          * done() is called everytime the request passes with success. This will run the done function from above
@@ -363,11 +372,11 @@ export default {
         // this.finalImages.forEach((imageObj, ind) => {
         for (let ind = 0; ind < this.finalImages.length; ind += 1) {
           const imageObj = this.finalImages[ind];
-
+          console.log('imageobje', imageObj);
           // Call for detailed image urls.
           this.$axios({
             headers: {
-              'Content-Type': 'image/*',
+              'Content-Type': 'image/png',
             },
             method: 'put',
             url: data.detailedImageUrls[ind].uploadUrl,
@@ -386,7 +395,7 @@ export default {
           // Call for thumbnails
           this.$axios({
             headers: {
-              'Content-Type': 'image/*',
+              'Content-Type': 'image/png',
             },
             method: 'put',
             url: data.thumbnailUrls[ind].uploadUrl,
@@ -395,6 +404,7 @@ export default {
           })
             .then(() => {
               this.thumbnailUrls[ind] = data.thumbnailUrls[ind].liveUrl;
+
               done();
             })
             .catch(() => {
@@ -406,7 +416,7 @@ export default {
           if (imageObj.featured) {
             this.$axios({
               headers: {
-                'Content-Type': 'image/*',
+                'Content-Type': 'image/png',
               },
               method: 'put',
               url: data.featuredImageUrls[ind].uploadUrl,
@@ -414,7 +424,7 @@ export default {
               withCredentials: false,
             })
               .then(() => {
-                this.featuredImageUrls = data.featuredImageUrls[ind].liveUrl;
+                this.featuredImageUrls[ind] = data.featuredImageUrls[ind].liveUrl;
                 done();
               })
               .catch(() => {

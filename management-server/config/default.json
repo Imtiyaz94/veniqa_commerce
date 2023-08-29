@@ -17,7 +17,6 @@
         "max_age": 1800000
     },
     "allowed_origins": [
-        "https://dev-veniqa-admin.netlify.com",
         "http://localhost:5202"
     ],
     "token_validity": {
@@ -35,12 +34,12 @@
     "aws_settings": {
         "s3": {
             "buckets": {
-                "catalog_image_bucket": "microcosmworkspoc"
+                "catalog_image_bucket": "bucket_name"
             },
-            "s3_resource_live_base_url": "https://s3.amazonaws.com",
-            "presigned_url_expires_in": 600
+            "s3_resource_live_base_url": "bucket_url",
+            "presigned_url_expires_in": 3600
         },
-        "default_region": "us-east-1"
+        "default_region": "bucket_region"
     },
     "sendgrid": {
         "templates": {
