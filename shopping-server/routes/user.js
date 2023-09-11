@@ -1,14 +1,16 @@
 import express from 'express';
 import userController from '../controllers/userController';
 import passportAuth from '../authentication/passportAuth';
+import passportJwtAuth from '../authentication/passportJwtAuth';
+
 var router = express.Router();
 
 /* GET Amazon Endpoint. */
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
     res.render('index', { title: 'Veniqa Users' });
 });
 
-router.use(passportAuth.isAuthenticated);
+router.use(passportJwtAuth.isAuthenticated);
 
 router.post('/address', userController.addNewAddress);
 

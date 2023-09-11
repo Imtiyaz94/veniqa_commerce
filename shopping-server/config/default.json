@@ -32,8 +32,6 @@
         "exception_log_file_name": "exceptions.log"
     },
     "frontend_urls": {
-        // "email_confirmation_base_url": "https://dev-veniqa-client.netlify.com/#/email-confirmation",
-        // "password_reset_base_url": "https://dev-veniqa-client.netlify.com/#/password-reset"
         "email_confirmation_base_url": "http://localhost:5201/#/email-confirmation",
         "password_reset_base_url": "http://localhost:5201/#/password-reset"
     },
