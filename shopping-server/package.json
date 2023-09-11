@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
+    "aws-sdk": "^2.1446.0",
     "axios": "^0.18.0",
     "bcrypt-nodejs": "0.0.3",
     "compression": "^1.7.3",
@@ -35,6 +36,7 @@
     "morgan": "~1.9.0",
     "nodemailer": "^4.7.0",
     "passport": "^0.4.0",
+    "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "rate-limit-redis": "^1.6.0",
     "redis": "^2.8.0",

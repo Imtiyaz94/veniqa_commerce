@@ -11,8 +11,8 @@
       </b-col>
       <b-col>
         <div class="align-right">
-          <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div>
-          <div class="btn btn-primary" @click="saveAll()">Save All</div>
+          <!-- <div class="btn btn-warning" @click="$emit('cancel')">Cancel</div>
+          <div class="btn btn-primary" @click="saveAll()">Save All</div> -->
           &nbsp;
           <div class="btn btn-primary" @click="$emit('cancel')">Done</div>
         </div>

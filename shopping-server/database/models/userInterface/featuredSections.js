@@ -12,7 +12,7 @@ let featuredContentSchema = new mongoose.Schema({
         type: {},
         required: true
     }
-}, {_id: false})
+}, { _id: false });
 
 let featuredSectionsSchema = new mongoose.Schema({
     name: {

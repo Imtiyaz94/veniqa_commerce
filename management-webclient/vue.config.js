@@ -20,7 +20,7 @@ module.exports = {
           routes: ['/', '/about'],
         }),
         */
-      ]
+      ],
     };
   },
 
@@ -30,5 +30,6 @@ module.exports = {
     port: 5202, // CHANGE YOUR PORT HERE!
     // https: false,
     hotOnly: false
-  }
+  },
+
 };
