@@ -88,7 +88,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 app.use(compression());
-
+app.use(passport.initialize());
 /************************************************************* */
 
 // Configure sessions
@@ -134,8 +134,8 @@ app.use(compression());
 /************************************************************* */
 // Configure authentication
 
-// passportJwtAuth.initializePassport(passport);
-app.use(passportJwtAuth.initialize());
+passportJwtAuth.initializePassport(passport);
+// app.use(passportJwtAuth.initialize());
 // app.use(passport.session());
 
 /************************************************************* */

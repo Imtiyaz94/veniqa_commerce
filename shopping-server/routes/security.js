@@ -1,9 +1,12 @@
 import express from 'express';
 import securityController from '../controllers/securityController';
 import HttpStatusCode from 'http-status-codes';
-var router = express.Router();
 import passport from 'passport';
 import passportJwtAuth from '../authentication/passportJwtAuth';
+import jwt from 'jsonwebtoken';
+
+var router = express.Router();
+
 /* GET Amazon Endpoint. */
 router.get('/', function (req, res, next) {
     res.render('index', { title: 'Veniqa Security' });
@@ -30,17 +33,18 @@ router.route('/signup').post(securityController.signup);
 // });
 
 // Token base auth 
-router.post('/login', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.post('/login', passport.authenticate('login', { session: false }), (req, res) => {
     const authToken = passportJwtAuth.generateAuthToken(req.user);
-
-    res.status(HttpStatusCode.OK).send({
-        authToken: authToken,
-        email: req.user.email,
-        name: req.user.name,
-        referral_token: req.user.referral_token,
-        emailConfirmed: req.user.emailConfirmationToken ? false : true,
-        cart: req.user.cart
-    });
+    console.log('user in login', authToken);
+    const token =
+        res.status(HttpStatusCode.OK).send({
+            authToken: authToken,
+            email: req.user.email,
+            name: req.user.name,
+            referral_token: req.user.referral_token,
+            emailConfirmed: req.user.emailConfirmationToken ? false : true,
+            cart: req.user.cart
+        });
 });
 
 
@@ -50,6 +54,7 @@ router.post('/login', passport.authenticate('jwt', { session: false }), (req, re
 
 // token based
 router.get('/isLoggedIn', passport.authenticate('jwt', { session: false }), (req, res) => {
+    // console.log("islogged in", req.user);
     // If this middleware is reached, it means the token is valid and user is authenticated
     res.status(HttpStatusCode.OK).send(true);
 });
@@ -75,13 +80,21 @@ router.get('/isLoggedIn', passport.authenticate('jwt', { session: false }), (req
 // });
 
 // token based
-router.post('/logout', (req, res) => {
+router.post('/logout', (req, res, next) => {
+    console.log("logout", req.user);
     // In a token-based system, there's no server-side state to clear
     // The client will simply stop using the token to effectively log out
+    const token = jwt.sign({ sub: req.user }, 'your-secret-key', { expiresIn: 0 });
+    res.status(HttpStatusCode.OK).send("Logged out successfully");
 
     // You might want to provide additional instructions to the client
-
-    res.status(HttpStatusCode.OK).send("Logged out successfully");
+    // req.logOut(options, (err) => {
+    //     if (err) {
+    //         return next(err);
+    //     }
+    //     res.redirect('/');
+    //     res.status(HttpStatusCode.OK).send("Logged out successfully");
+    // });
 });
 
 

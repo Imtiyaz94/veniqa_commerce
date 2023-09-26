@@ -6,6 +6,7 @@ export default {
   state: {
     email: '',
     name: '',
+    token: '',
     isSessionActive: false,
     emailConfirmed: false,
   },
@@ -46,6 +47,7 @@ export default {
         if (data) {
           commit('setEmail', data.email);
           commit('setName', data.name);
+          commit('setToken', data.authToken);
           commit('setSessionActive', true);
           commit('setEmailConfirmed', data.emailConfirmed === 'true' || data.emailConfirmed === true);
         }
@@ -58,7 +60,7 @@ export default {
     async logout({ commit }) {
       try {
         const { data } = await Vue.prototype.$axios({
-          method: 'get',
+          method: 'post',
           url: ProxyUrls.logoutUrl,
         });
 
@@ -78,11 +80,12 @@ export default {
       if (res && res.data === true) {
         commit('setEmail', localStorage.getItem('email'));
         commit('setName', localStorage.getItem('name'));
+        commit('setToken', localStorage.getItem('token'));
         commit('setSessionActive', true);
         commit(
           'setEmailConfirmed',
           localStorage.getItem('emailConfirmed') === 'true'
-            || localStorage.getItem('emailConfirmed') === true,
+          || localStorage.getItem('emailConfirmed') === true,
         );
       } else {
         commit('setSessionActive', false);
@@ -98,7 +101,10 @@ export default {
       state.email = email;
       localStorage.setItem('email', email);
     },
-
+    setToken(state, token) {
+      state.token = token;
+      localStorage.setItem('token', token);
+    },
     setName(state, name) {
       state.name = name;
       localStorage.setItem('name', name);
@@ -109,6 +115,7 @@ export default {
       if (!val) {
         localStorage.removeItem('email');
         localStorage.removeItem('name');
+        localStorage.removeItem('token');
         localStorage.removeItem('emailConfirmed');
         localStorage.removeItem('sessionDT');
       }
@@ -119,6 +126,7 @@ export default {
       state.email = '';
       localStorage.removeItem('email');
       localStorage.removeItem('name');
+      localStorage.removeItem('token');
       localStorage.removeItem('emailConfirmed');
       state.isSessionActive = false;
     },
@@ -131,7 +139,9 @@ export default {
     getEmail(state) {
       return state.email;
     },
-
+    getToken(state) {
+      return state.token;
+    },
     getFirstName(state) {
       if (!state.name) return '';
       return state.name.split(' ')[0];

@@ -10,7 +10,7 @@ router.get('/', function (req, res, next) {
     res.render('index', { title: 'Veniqa Users' });
 });
 
-router.use(passportJwtAuth.isAuthenticated);
+// router.use(passportJwtAuth.isAuthenticated);
 
 router.post('/address', userController.addNewAddress);
 
