@@ -13,7 +13,7 @@ import App from './App.vue';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
-
+import './assets/css/global.scss'
 import '@/assets/css/global.scss';
 import '@/assets/css/overrides.scss';
 import 'vue-croppa/dist/vue-croppa.css';
